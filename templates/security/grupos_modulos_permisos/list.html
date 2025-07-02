@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+<title>{% block title %}{{ title }}{% endblock %}</title>
+{% block content %}
+{% load static %}
+
+<style>
+/* Fondo gris para la tabla */
+.table-gris {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%) !important;
+}
+.table-gris th, .table-gris td {
+    background: transparent !important;
+    color: #222 !important;
+}
+.table-gris thead th {
+    background: #d1d5db !important;
+    color: #222 !important;
+}
+/* Paginación redondeada */
+.pagination-rounded a, .pagination-rounded span {
+    border-radius: 9999px !important;
+    margin: 0 2px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.pagination-rounded a {
+    border: 1.5px solid #a3a3a3;
+    background: #f3f4f6;
+    color: #374151;
+    transition: background 0.2s, color 0.2s;
+}
+.pagination-rounded a:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+.pagination-rounded .bg-blue-600 {
+    background: #2563eb !important;
+    color: #fff !important;
+    border: 1.5px solid #2563eb !important;
+}
+/* Botones redondeados grandes */
+.btn-xl-rounded {
+    border-radius: 2rem !important;
+    font-size: 1.1rem;
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+}
+/* Barra de búsqueda centrada y corta */
+.search-bar-center {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+.search-bar-center form {
+    width: 100%;
+    max-width: 340px;
+}
+.search-bar-center input[type="text"] {
+    text-align: center;
+    font-size: 1.1rem;
+}
+</style>
+
+<section class="mt-6 max-w-7xl mx-auto px-4">
+    <div class="text-center mb-8" data-aos="fade-up" data-aos-delay="200">
+        <h1 class="inline-block rounded-2xl bg-blue-600 px-6 py-2 text-white uppercase text-4xl font-bold font-[Orbitron]">
+            {{ title1 }}
+        </h1>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="search-bar-center">
+        <form method="GET">
+            <div class="relative flex items-center">
+                <span class="absolute left-3 text-xl">🔍</span>
+                <input
+                    type="text"
+                    name="q"
+                    id="table-search"
+                    placeholder="Buscar grupo-módulo-permiso..."
+                    value="{{ request.GET.q }}"
+                    class="w-full pl-10 pr-4 py-2 rounded-lg border border-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla -->
+    <div class="overflow-x-auto rounded-lg shadow-lg border border-gray-300 table-gris">
+        <table class="w-full text-left text-sm font-mono table-gris">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 w-20 font-semibold">ID Grupo</th>
+                    <th class="px-6 py-3 w-40 font-semibold">Grupo</th>
+                    <th class="px-6 py-3 w-48 font-semibold">Módulo</th>
+                    <th class="px-6 py-3 font-semibold">Permisos</th>
+                    <th class="px-6 py-3 w-40 font-semibold text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in GroupModulePermissions %}
+                <tr class="border-b border-gray-300 hover:bg-blue-100 transition-colors">
+                    <td class="px-6 py-4 font-semibold">{{ item.group.id }}</td>
+                    <td class="px-6 py-4 font-semibold">{{ item.group.name }}</td>
+                    <td class="px-6 py-4">{{ item.module.name }}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col gap-1">
+                        {% for perm in item.permissions.all %}
+                            <span class="inline-block bg-blue-200 text-blue-900 px-3 py-1 rounded-full text-xs font-semibold mb-1">
+                                {{ perm.name }}
+                            </span>
+                        {% endfor %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 flex justify-center gap-3">
+                        {% if permissions.change_groupmodulepermission %}
+                        <a href="{% url 'security:group_module_permission_update' item.id %}" 
+                           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-btn shadow-md transition flex items-center justify-center gap-1"
+                           title="Editar">
+                            <i class="fa-solid fa-edit"></i>
+                        </a>
+                        {% endif %}
+                        {% if permissions.delete_groupmodulepermission %}
+                        <button type="button" 
+                                onclick="openDeleteModal('{{ item.id }}', '{{ item.group.name }} - {{ item.module.name }}')"
+                                class="text-red-600 dark:text-red-500 hover:text-red-800 mx-1 rounded-btn"                              
+                                title="Eliminar">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-6 text-gray-400 italic">No hay registros.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="flex justify-center mt-6 pagination-rounded">
+        <nav aria-label="Page navigation">
+            <ul class="inline-flex space-x-1">
+                {% if page_obj.has_previous %}
+                <li>
+                    <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                       class="block px-4 py-2 rounded-btn border border-blue-200 bg-white hover:bg-blue-100 hover:text-blue-700 text-blue-700 font-semibold">
+                        &laquo; Primero
+                    </a>
+                </li>
+                <li>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                       class="block px-4 py-2 rounded-btn border border-blue-200 bg-white hover:bg-blue-100 hover:text-blue-700 text-blue-700 font-semibold">
+                        &lsaquo; Anterior
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num >= page_obj.number|add:-2 and num <= page_obj.number|add:2 %}
+                    <li>
+                        <a href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                           class="block px-4 py-2 rounded-btn border border-blue-200 hover:bg-blue-100 hover:text-blue-700 font-semibold {% if num == page_obj.number %}bg-blue-600 text-white{% else %}bg-white text-blue-700{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li>
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                       class="block px-4 py-2 rounded-btn border border-blue-200 bg-white hover:bg-blue-100 hover:text-blue-700 text-blue-700 font-semibold">
+                        Siguiente &rsaquo;
+                    </a>
+                </li>
+                <li>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                       class="block px-4 py-2 rounded-btn border border-blue-200 bg-white hover:bg-blue-100 hover:text-blue-700 text-blue-700 font-semibold">
+                        Último &raquo;
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Botones inferiores -->
+    <div class="flex justify-center mb-12 mt-6 gap-4">
+        {% if permissions.add_groupmodulepermission %}
+        <a href="{% url 'security:group_module_permission_create' %}"
+           class="btn-xl-rounded bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 shadow-lg text-center transition flex items-center justify-center gap-2">
+            Crear otro grupo modulo permiso
+        </a>
+        {% endif %}
+        <a href="{% url 'home' %}"
+           class="btn-xl-rounded bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 shadow-lg text-center transition flex items-center justify-center gap-2">
+            Ir a inicio
+        </a>
+    </div>
+</section>
+
+<!-- Modal eliminar -->
+{% include 'fragments/delete.html' %}
+
+<script>
+function openDeleteModal(id, name) {
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.action = "{% url 'security:group_module_permission_delete' 0 %}".replace('0', id);
+    document.getElementById('Description').textContent = `ID: ${id} - ${name}`;
+    document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.getElementById('deleteForm');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            const submitBtn = deleteForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

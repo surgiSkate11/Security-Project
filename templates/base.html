@@ -1,0 +1,243 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Iconos adicionales de Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Iconos de módulos y menús -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <title>{% block title %}Mi Proyecto Django{% endblock %}</title>
+    {% tailwind_css %}
+    <style>
+        /* Efecto ripple para botones */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(59,130,246,0.2);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+            z-index: 10;
+        }
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="container mx-auto px-4 py-8">
+
+{% block navBar %}
+    <!-- Barra de navegación principal -->
+    <header class="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo y Título -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                        <!-- Icono de hospital (Font Awesome) -->
+                        <i class="fas fa-hospital-symbol text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">SaludTotal</h1>
+                        <p class="text-sm text-gray-600">Lo mejor en Atención</p>
+                    </div>
+                </div>
+                <!-- Perfil de usuario o botón de login -->
+                <div class="flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <!-- Selector de grupos -->
+                        <div class="relative">
+                            <select id="groupSelect" class="bg-white border border-gray-300 rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 shadow-md hover:shadow-lg">
+                                <option value="">Seleccionar Grupo</option>
+                                {% for group in group_list %}
+                                    <option value="{{ group.id }}" {% if request.GET.gpid == group.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ group.name }}
+                                    </option>
+                                {% empty %}
+                                    <option value="" disabled>Sin grupos asignados</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Dropdown de usuario -->
+                        <div class="relative">
+                            <button id="userDropdown" class="flex items-center space-x-3 bg-white rounded-full shadow-lg px-4 py-2 hover:shadow-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden">
+                                <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                    <!-- Icono de usuario (Font Awesome) -->
+                                    <i class="fas fa-user text-white"></i>
+                                </div>
+                                <div class="text-left">
+                                    <span class="text-gray-700 font-medium block">{{ user.username }}</span>
+                                    {% if group_list.exists %}
+                                        <span class="text-xs text-gray-500">{{ group.name }}</span>
+                                    {% endif %}
+                                </div>
+                                <!-- Icono de flecha para dropdown -->
+                                <i id="userDropdownIcon" class="fas fa-chevron-down text-gray-500 transition-transform duration-200"></i>
+                            </button>
+                            <!-- Menú desplegable de usuario -->
+                            <div id="userDropdownMenu" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 opacity-0 invisible transform scale-95 transition-all duration-200 z-50">
+                                <div class="py-2">
+                                    <!-- Información del usuario -->
+                                    <div class="px-4 py-3 border-b border-gray-100">
+                                        <p class="text-sm font-medium text-gray-900">{{ user.username }}</p>
+                                        <p class="text-sm text-gray-500">{{ user.email|default:"Sin email" }}</p>
+                                        {% if user.group.exists %}
+                                            <div class="mt-2">
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {{ user.group.name }}
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <!-- Opciones del menú -->
+                                    <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                                        <i class="fas fa-id-badge w-4 h-4 mr-3 text-gray-400"></i>
+                                        Mi Perfil
+                                    </a>
+                                    <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                                        <i class="fas fa-cog w-4 h-4 mr-3 text-gray-400"></i>
+                                        Configuración
+                                    </a>
+                                    <div class="border-t border-gray-100 my-1"></div>
+                                    <form method="POST" action="{% url 'security:signout' %}" class="block">
+                                        {% csrf_token %}
+                                        <button type="submit" class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200 relative overflow-hidden">
+                                            <i class="fas fa-sign-out-alt w-4 h-4 mr-3 text-red-500"></i>
+                                            Cerrar Sesión
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <!-- Botón de login -->
+                        <a href="{% url 'security:signin' %}" class="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-6 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                            <i class="fas fa-sign-in-alt w-4 h-4"></i>
+                            <span>Iniciar Sesión</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+{% endblock navBar %}
+
+{% block js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dropdown de usuario animado
+    const userDropdown = document.getElementById('userDropdown');
+    const userDropdownMenu = document.getElementById('userDropdownMenu');
+    const userDropdownIcon = document.getElementById('userDropdownIcon');
+    if (userDropdown && userDropdownMenu) {
+        userDropdown.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const isVisible = !userDropdownMenu.classList.contains('opacity-0');
+            if (isVisible) {
+                userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
+                userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
+                userDropdownIcon.classList.remove('rotate-180');
+            } else {
+                userDropdownMenu.classList.remove('opacity-0', 'invisible', 'scale-95');
+                userDropdownMenu.classList.add('opacity-100', 'visible', 'scale-100');
+                userDropdownIcon.classList.add('rotate-180');
+            }
+        });
+        // Cerrar dropdown al hacer click fuera
+        document.addEventListener('click', function(e) {
+            if (!userDropdown.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                userDropdownMenu.classList.add('opacity-0', 'invisible', 'scale-95');
+                userDropdownMenu.classList.remove('opacity-100', 'visible', 'scale-100');
+                userDropdownIcon.classList.remove('rotate-180');
+            }
+        });
+        // Evitar cierre al hacer click dentro del menú
+        userDropdownMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+
+    // Selector de grupos: redirige al seleccionar grupo
+    const groupSelect = document.getElementById('groupSelect');
+    if (groupSelect) {
+        groupSelect.addEventListener('change', function() {
+            const selectedGroupId = this.value;
+            if (selectedGroupId) {
+                window.location.href = `{% url 'home' %}?gpid=${selectedGroupId}`;
+            } else {
+                window.location.href = `{% url 'home' %}`;
+            }
+        });
+    }
+
+    // Efecto ripple en botones
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.disabled) return;
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            this.appendChild(ripple);
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+
+    // Animación de entrada para tarjetas de estadísticas
+    const statsCards = document.querySelectorAll('.grid > div');
+    statsCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Scroll suave a módulos al hacer click en tarjetas
+    statsCards.forEach(card => {
+        card.addEventListener('click', function() {
+            document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3').scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    // Intersection Observer para animaciones de tarjetas de módulos
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'slideInRight 0.6s ease-out forwards';
+            }
+        });
+    }, observerOptions);
+    document.querySelectorAll('.module-card').forEach(card => {
+        observer.observe(card);
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}{% endblock content %}
+</div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+/* Estilos para campos con errores en el sistema médico */
+
+.field-container.has-error input,
+.field-container.has-error select,
+.field-container.has-error textarea {
+    border-color: #e11d48 !important; /* Rosa médico */
+    background: linear-gradient(90deg, #fdf2f8 0%, #f3e8ff 100%) !important;
+    color: #b91c1c !important;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+.field-container.has-error input:focus,
+.field-container.has-error select:focus,
+.field-container.has-error textarea:focus {
+    border-color: #7c3aed !important; /* Violeta médico */
+    box-shadow: 0 0 0 2px #a5b4fc !important;
+    outline: none !important;
+}
+
+.field-container.has-error input[type="checkbox"] {
+    border-color: #e11d48 !important;
+    accent-color: #e11d48 !important;
+}
+
+.field-container.has-error .text-red-600,
+.field-container.has-error .text-red-400 {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #e11d48 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    .field-container.has-error input,
+    .field-container.has-error select,
+    .field-container.has-error textarea {
+        background: linear-gradient(90deg, #312e81 0%, #831843 100%) !important;
+        color: #fca5a5 !important;
+        border-color: #e11d48 !important;
+    }
+    .field-container.has-error input:focus,
+    .field-container.has-error select:focus,
+    .field-container.has-error textarea:focus {
+        box-shadow: 0 0 0 2px #f472b6 !important;
+    }
+}
+
+/* Animación sutil para errores */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+.field-container.has-error {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Mensaje de error bonito */
+.field-container .error-message,
+.field-container .text-red-600,
+.field-container .text-red-400 {
+    border-radius: 0.75rem;
+    padding: 0.35rem 1rem;
+    margin-top: 0.25rem;
+    background: linear-gradient(90deg, #fca5a5 0%, #f3e8ff 100%);
+    color: #b91c1c;
+    font-size: 1rem;
+    display: inline-block;
+    box-shadow: 0 2px 8px 0 rgba(236, 72, 153, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+    .field-container .error-message,
+    .field-container .text-red-600,
+    .field-container .text-red-400 {
+        background: linear-gradient(90deg, #831843 0%, #312e81 100%);
+        color: #fca5a5;
+    }
+}
