@@ -122,13 +122,8 @@ class PermissionMixin(object):
             messages.error(
                 request,
                 'A ocurrido un error al ingresar al modulo, error para el admin es : {}'.format(ex))
-
-        # Si el usuario está autenticado pero ocurre error, redirige a home
-        if request.user.is_authenticated:
-            return redirect('home')
-
-        # Si no está autenticado, redirige a login
-        return redirect('security:auth_login')
+            # Redirige a login en lugar de home para evitar bucles
+            return redirect('security:signin')
 
     def _get_permissions_to_validate(self):
         # Devuelve los permisos requeridos para la vista

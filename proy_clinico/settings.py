@@ -93,25 +93,25 @@ WSGI_APPLICATION = 'proy_clinico.wsgi.application'
 
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
-# DATABASE POSTGRESQL:
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'proy_clinico_db',
-        'USER': 'your_username',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# # DATABASE POSTGRESQL:
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'proy_clinico_db',
+#         'USER': 'your_username',
+#         'PASSWORD': 'your_password',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -156,6 +156,7 @@ MEDIA_URL = '/media/' # url de imagenes
 
 AUTH_USER_MODEL = 'security.User'
 LOGIN_URL = '/security/signin/'
+LOGIN_REDIRECT_URL = '/'  # Redirige a home después del login
 #SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 #SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'

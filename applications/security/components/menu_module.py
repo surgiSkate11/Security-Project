@@ -52,8 +52,9 @@ class MenuModule:
         # Lista de permisos activos de módulos para el grupo
         group_module_permission_list = GroupModulePermission.objects.get_group_module_permission_active_list(group.id).order_by('module__order')
 
-        # Obtiene menús únicos (evita repetidos)
-        menu_unicos = group_module_permission_list.order_by('module__menu_id').distinct('module__menu_id')
+        # Obtiene menús únicos (evita repetidos) - Compatible con SQLite
+        menu_ids_unicos = group_module_permission_list.values_list('module__menu_id', flat=True).distinct()
+        menu_unicos = group_module_permission_list.filter(module__menu_id__in=menu_ids_unicos).order_by('module__menu_id').distinct()
 
         # Construye la lista de menús con sus módulos
         menu_list = [
